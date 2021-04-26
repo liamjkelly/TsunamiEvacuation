@@ -1,10 +1,11 @@
-extensions [gis]
+extensions [gis time nw]
 patches-own[road-here]
 globals [ streets-dataset
-  water-dataset]
+  water-dataset dt]
 breed [pedestrians pedestrian]
 breed [nodes node]
 pedestrians-own [loc1]
+nodes-own [shelter?]
 
 to setup
   clear-all
@@ -43,10 +44,11 @@ to make-road-network
         if not empty? location [ ; some coordinates are empty []
           create-nodes 1 [
             set color green
-            set size 1
+            set size 0.6
             set xcor item 0 location
             set ycor item 1 location
             set hidden? true
+            set shelter? false
             if first-node = nobody [
               set first-node self
             ]
@@ -54,6 +56,13 @@ to make-road-network
               create-link-with previous-node
             ]
             set previous-node self
+            if (who = 395) or (who = 1873) or (who = 1728) or (who = 1819) or (who = 327) or (who = 573) or (who = 1152) or (who = 5) [
+              set shelter? true
+              set hidden? false
+              set color yellow
+              set size 2
+              set shape "circle"
+            ]
           ]
         ]
       ]

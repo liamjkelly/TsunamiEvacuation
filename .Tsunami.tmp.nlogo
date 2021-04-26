@@ -1,17 +1,18 @@
-extensions [gis]
+extensions [gis time]
 patches-own[road-here]
 globals [ streets-dataset
-  water-dataset]
+  water-dataset dt]
 breed [pedestrians pedestrian]
 breed [nodes node]
 pedestrians-own [loc1]
+nodes-own [shelter?]
 
 to setup
   clear-all
   reset-ticks
   ; Load all of our datasets
-  set streets-dataset gis:load-dataset "/shape/roads.shp"
-  set water-dataset gis:load-dataset "planet_-123.954_45.973_1b032c28-shp/shape/waterways.shp"
+  set streets-dataset gis:load-dataset "GISData/shape/roads.shp"
+  set water-dataset gis:load-dataset "GISData/shape/waterways.shp"
   ; Set the world envelope to the union of all of our dataset's envelopes
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of streets-dataset)
                                                (gis:envelope-of water-dataset))
@@ -43,10 +44,11 @@ to make-road-network
         if not empty? location [ ; some coordinates are empty []
           create-nodes 1 [
             set color green
-            set size 1
+            set size 0.6
             set xcor item 0 location
             set ycor item 1 location
-            set hidden? true
+            set hidden? false
+            set shelter? false
             if first-node = nobody [
               set first-node self
             ]
@@ -54,6 +56,13 @@ to make-road-network
               create-link-with previous-node
             ]
             set previous-node self
+            if (who = 395) or (who = 1873) or (who = 1728) or (who = 1819) or (who = 327) or (who = 573) or (who = 1152) or (who = 1819)[
+              set shelter? true
+              set hidden? false
+              set color yellow
+              set size 2
+              set shape "circle"
+            ]
           ]
         ]
       ]
