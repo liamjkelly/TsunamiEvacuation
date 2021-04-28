@@ -1,6 +1,6 @@
 extensions [gis time nw]
 patches-own[road-here]
-globals [ streets-dataset water-dataset meters shelters ]
+globals [ streets-dataset water-dataset zones-dataset meters shelters ]
 breed [pedestrians pedestrian]
 breed [nodes node]
 pedestrians-own [loc1 safe? casualty? target current ]
@@ -11,37 +11,44 @@ to setup
   reset-ticks
 
   ; Load coordinate system
-  gis:load-coordinate-system "GISData/shape/roads.prj"
+  ;gis:load-coordinate-system "GISData/shape/roads.prj"
 
   ; Load all of our datasets
   set streets-dataset gis:load-dataset "GISData/shape/roads.shp"
   set water-dataset gis:load-dataset "GISData/shape/waterways.shp"
+  set zones-dataset gis:load-dataset "GISData/Areas.shp"
 
   ; Set the world envelope to the union of all of our dataset's envelopes
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of streets-dataset)
-                                               (gis:envelope-of water-dataset))
+                                                (gis:envelope-of water-dataset)
+                                               (gis:envelope-of zones-dataset)
+                                               )
 
   gis:set-drawing-color white
   gis:draw streets-dataset 1
 
   gis:set-drawing-color blue
   gis:draw water-dataset 1
-  ask patches
-     [if gis:intersects? streets-dataset self
-         [set road-here 1 ] ]
+
+  gis:set-drawing-color red
+  gis:draw zones-dataset 1
+
+  ;ask patches
+    ; [if gis:intersects? streets-dataset self
+     ;    [set road-here 1 ] ]
 
   make-road-network
 
   set shelters nodes with [ shelter? = true ]
-  create-pedestrians 25 [
+  create-pedestrians 20 [
     set color red
     set current one-of nodes
     set safe? false
     set casualty? false
-    move-to current
-    let start current
-    set target min-one-of shelters [ nw:distance-to start ]
-  ]
+  ;  move-to current
+  ;  let start current
+  ;  set target min-one-of shelters [ nw:distance-to start ]
+ ; ]
 
 end
 
