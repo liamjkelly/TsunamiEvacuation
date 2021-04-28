@@ -40,7 +40,7 @@ to setup
   make-road-network
 
   set shelters nodes with [ shelter? = true ]
-  create-pedestrians 20 [
+  create-pedestrians 4500 [
     set color red
     set current one-of nodes
     set safe? false
@@ -75,7 +75,7 @@ to make-road-network
               create-link-with previous-node
             ]
             set previous-node self
-            if (who = 395) or (who = 1873) or (who = 1728) or (who = 1819) or (who = 327) or (who = 573) or (who = 1152) or (who = 5) [
+            if (who = 388) or (who = 3651) or (who = 1713) or (who = 1805) or (who = 316) or (who = 566) or (who = 1141) or (who = 5) [
               set shelter? true
               set hidden? false
               set color yellow
