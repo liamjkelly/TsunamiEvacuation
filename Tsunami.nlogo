@@ -1,18 +1,22 @@
 extensions [gis time nw]
 patches-own[road-here]
-globals [ streets-dataset
-  water-dataset dt]
+globals [ streets-dataset water-dataset meters shelters ]
 breed [pedestrians pedestrian]
 breed [nodes node]
-pedestrians-own [loc1]
+pedestrians-own [loc1 safe? casualty? target current ]
 nodes-own [shelter?]
 
 to setup
   clear-all
   reset-ticks
+
+  ; Load coordinate system
+  gis:load-coordinate-system "GISData/shape/roads.prj"
+
   ; Load all of our datasets
   set streets-dataset gis:load-dataset "GISData/shape/roads.shp"
   set water-dataset gis:load-dataset "GISData/shape/waterways.shp"
+
   ; Set the world envelope to the union of all of our dataset's envelopes
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of streets-dataset)
                                                (gis:envelope-of water-dataset))
@@ -28,9 +32,17 @@ to setup
 
   make-road-network
 
-  create-pedestrians 1 [set color red
-    set loc1 one-of nodes
-    move-to loc1]
+  set shelters nodes with [ shelter? = true ]
+  create-pedestrians 20 [
+    set color red
+    set current one-of nodes
+    set safe? false
+    set casualty? false
+    move-to current
+    let start current
+    set target min-one-of shelters [ nw:distance-to start ]
+  ]
+
 end
 
 to make-road-network
@@ -74,13 +86,54 @@ to make-road-network
 end
 
 to go
+
   ask pedestrians [
-    let new-location one-of [link-neighbors] of loc1
-    face new-location  ;; not strictly necessary, but improves the visuals a bit
-    move-to new-location
-    set loc1 new-location
+    let path nobody
+    let t target
+    ask current [
+      set path but-first nw:turtles-on-path-to t
+    ]
+    ifelse (length path != 0) [
+      let next-loc first path
+      face next-loc
+      move-to next-loc
+      set current next-loc
+    ]  [
+      set safe? true
+      set color green
+      set shape "circle"
+    ]
+
+
   ]
   tick
+end
+
+to outdated-go
+  ;let target one-of nodes with [ shelter? = true ]
+    ;if target != nobody [
+      ; Remember the starting node
+      ;let current loc1
+      ; Define a path variable from the current node- take all but
+      ; the first item (as first item is current node)
+      ;let path nobody
+      ;ask current [
+       ; set path but-first nw:turtles-on-path-to target
+      ;]
+      ; Move along the path node-to-node
+     ;foreach path [
+       ; next-target ->
+       ; face next-target
+      ;  move-to next-target
+      ;]
+      ;set safe? true
+      ;set color green
+      ;set shape "circle"
+    ;]
+    ;let new-location one-of [link-neighbors] of loc1
+    ;face new-location  ;; not strictly necessary, but improves the visuals a bit
+    ;move-to new-location
+    ;set loc1 new-location
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
