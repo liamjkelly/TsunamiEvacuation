@@ -23,30 +23,37 @@ to setup
                                                 (gis:envelope-of water-dataset)
                                                (gis:envelope-of zones-dataset)
                                                )
-
+  ; draw streets
   gis:set-drawing-color white
   gis:draw streets-dataset 1
-
+  ; draw rivers (for background)
   gis:set-drawing-color blue
   gis:draw water-dataset 1
-
+  ; draw evac zones
   gis:set-drawing-color red
   gis:draw zones-dataset 1
 
+  ; snippet of code that asks if there is a road at the specific patch
+  ; not currently used
   ask patches
      [if gis:intersects? streets-dataset self
          [set road-here 1 ] ]
 
+  ; make road graph from road dataset
   make-road-network
 
+  ; save all shelters into agentset
   set shelters nodes with [ shelter? = true ]
-  create-pedestrians 45 [
+
+  ; create pedestrians
+  create-pedestrians 4500 [
     set color red
-    set current one-of nodes
+    set current one-of nodes ; random start location
     set safe? false
     set casualty? false
     move-to current
     let start current
+    ; set the target shelter as the one with the shortest distance
     set target min-one-of shelters [ nw:distance-to start ]
   ]
 
@@ -56,11 +63,15 @@ to make-road-network
   clear-links
   let first-node nobody
   let previous-node nobody
+
   foreach gis:feature-list-of streets-dataset [ ; each polyline
+
     vert -> foreach gis:vertex-lists-of vert [ ; each polyline segment / coordinate pair
+      ;
       coord -> foreach coord [ ; each coordinate
-        loc -> let location gis:location-of loc
+        loc -> let location gis:location-of loc ; get the location
         if not empty? location [ ; some coordinates are empty []
+          ; create a node at this location and set the coordinates of it as the coords of location
           create-nodes 1 [
             set color green
             set size 0.6
@@ -68,13 +79,16 @@ to make-road-network
             set ycor item 1 location
             set hidden? true
             set shelter? false
+            ; is this the first node?
             if first-node = nobody [
               set first-node self
             ]
+            ; create links with the node before it
             if previous-node != nobody [
               create-link-with previous-node
             ]
             set previous-node self
+            ; s
             if (who = 388) or (who = 3651) or (who = 1713) or (who = 1805) or (who = 316) or (who = 566) or (who = 1141) or (who = 5) [
               set shelter? true
               set hidden? false
@@ -93,14 +107,18 @@ to make-road-network
 end
 
 to go
-
+  ; movement
   ask pedestrians [
-    let path nobody
-    let t target
+    let path nobody ; no path yet
+    let t target ; save shelter into local variable
+    ; find the path to the target shelter
     ask current [
       set path but-first nw:turtles-on-path-to t
     ]
+    ; if not at the shelter, move to the next node in the path
+    ; if at the shelter, mark the agent safe
     ifelse (length path != 0) [
+      ; get first node on the path and move to it, make it the current location
       let next-loc first path
       face next-loc
       move-to next-loc
