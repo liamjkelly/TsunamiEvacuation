@@ -88,7 +88,7 @@ to make-road-network
               create-link-with previous-node
             ]
             set previous-node self
-            ; s
+            ; specific nodes chosen as shelters
             if (who = 388) or (who = 3651) or (who = 1713) or (who = 1805) or (who = 316) or (who = 566) or (who = 1141) or (who = 5) [
               set shelter? true
               set hidden? false
@@ -194,7 +194,7 @@ PLOT
 913
 304
 Number Evacuated
-NIL
+ticks
 NIL
 0.0
 10.0
@@ -204,7 +204,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -16777216 true "" "plot count pedestrians with [safe? = true]"
 
 PLOT
 714
@@ -222,7 +222,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -16777216 true "" "plot count pedestrians with [casualty? = true]"
 
 BUTTON
 715

@@ -194,7 +194,7 @@ PLOT
 913
 304
 Number Evacuated
-NIL
+ticks
 NIL
 0.0
 10.0
@@ -204,7 +204,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -16777216 true "" "plot count pedestrians with [safe? = true]"
 
 PLOT
 714
@@ -222,7 +222,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -16777216 true "" "plot count pedestrians with [casualty? = true]"
 
 BUTTON
 715
