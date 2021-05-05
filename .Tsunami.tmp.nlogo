@@ -1,9 +1,9 @@
 extensions [gis time nw]
 patches-own[road-here]
-globals [ streets-dataset water-dataset zones-dataset meters shelters ]
-breed [pedestrians pedestrian]
+globals [ streets-dataset water-dataset zones-dataset meters shelters tsunami ]
+breed [families family]
 breed [nodes node]
-pedestrians-own [loc1 safe? casualty? target current ]
+families-own [loc1 safe? casualty? evac? target current evac-time]
 nodes-own [shelter?]
 
 to setup
@@ -46,7 +46,7 @@ to setup
   set shelters nodes with [ shelter? = true ]
 
   ; create pedestrians
-  create-pedestrians 4500 [
+  create-families 4500 [
     set color red
     set current one-of nodes ; random start location
     set safe? false
@@ -55,6 +55,17 @@ to setup
     let start current
     ; set the target shelter as the one with the shortest distance
     set target min-one-of shelters [ nw:distance-to start ]
+    set evac? false
+    let rand random-float 1
+    (if-else rand < 0.25 [
+      set evac-time 300
+    ] rand < 0.5 [
+      set evac-time 600
+    ] rand < 0.75 [
+      set evac-time 1200
+    ] [
+      set evac-time 2400
+    ])
   ]
 
 end
@@ -108,28 +119,44 @@ end
 
 to go
   ; movement
-  ask pedestrians [
-    let path nobody ; no path yet
-    let t target ; save shelter into local variable
-    ; find the path to the target shelter
-    ask current [
-      set path but-first nw:turtles-on-path-to t
+  ask families [
+    ; is it time for this agent to evac?
+    if (ticks >= evac-time) [
+      set evac? true
     ]
+  ]
+  ask families [
     ; if not at the shelter, move to the next node in the path
     ; if at the shelter, mark the agent safe
-    ifelse (length path != 0) [
-      ; get first node on the path and move to it, make it the current location
-      let next-loc first path
-      face next-loc
-      move-to next-loc
-      set current next-loc
-    ]  [
-      set safe? true
-      set color green
-      set shape "circle"
+    if (evac? = true) [
+      let path nobody ; no path yet
+      let t target ; save shelter into local variable
+                   ; find the path to the target shelter
+      ask current [
+        set path but-first nw:turtles-on-path-to t
+      ]
+      ifelse (length path != 0) [
+        ; get first node on the path and move to it, make it the current location
+        let next-loc first path
+        face next-loc
+        move-to next-loc
+        set current next-loc
+      ]  [
+        set safe? true
+        set color green
+        set shape "circle"
+      ]
     ]
-
-
+  ]
+  ; social pressure
+  ; if 10 surrounding agents are evacuating, I will start to evacuate
+  ask families [
+    if (evac? = false) [
+      let near-evac families in-radius 2 with [evac? = true]
+      if count near-evac >=  [
+        set evac? true
+      ]
+    ]
   ]
   tick
 end
@@ -204,7 +231,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count pedestrians with [safe? = true]"
+"default" 1.0 0 -16777216 true "" "plot count families with [safe? = true]"
 
 PLOT
 714
@@ -222,7 +249,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count pedestrians with [casualty? = true]"
+"default" 1.0 0 -16777216 true "" "plot count families with [casualty? = true]"
 
 BUTTON
 715
