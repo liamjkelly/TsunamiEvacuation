@@ -1,6 +1,6 @@
 extensions [gis time nw]
-patches-own[road-here]
-globals [ streets-dataset water-dataset zones-dataset meters shelters tsunami ]
+patches-own[road-here zone-here]
+globals [streets-dataset water-dataset zones1-dataset zones2-dataset zones3-dataset meters shelters tsunami]
 breed [families family]
 breed [nodes node]
 families-own [loc1 safe? casualty? evac? target current evac-time]
@@ -16,12 +16,16 @@ to setup
   ; Load all of our datasets
   set streets-dataset gis:load-dataset "GISData/shape/roads.shp"
   set water-dataset gis:load-dataset "GISData/shape/waterways.shp"
-  set zones-dataset gis:load-dataset "GISData/Zones/Areas.shp"
+  set zones1-dataset gis:load-dataset "GISData/Zones/Zones1.shp"
+  set zones2-dataset gis:load-dataset "GISData/Zones/Zones2.shp"
+  set zones3-dataset gis:load-dataset "GISData/Zones/Zones3.shp"
 
   ; Set the world envelope to the union of all of our dataset's envelopes
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of streets-dataset)
                                                 (gis:envelope-of water-dataset)
-                                               (gis:envelope-of zones-dataset)
+                                                (gis:envelope-of zones1-dataset)
+                                                (gis:envelope-of zones2-dataset)
+                                                (gis:envelope-of zones3-dataset)
                                                )
   ; draw streets
   gis:set-drawing-color white
@@ -30,14 +34,28 @@ to setup
   gis:set-drawing-color blue
   gis:draw water-dataset 1
   ; draw evac zones
-  gis:set-drawing-color red
-  gis:draw zones-dataset 1
+  gis:set-drawing-color black
+  gis:fill zones1-dataset 1
+  gis:set-drawing-color black
+  gis:fill zones2-dataset 1
+  gis:set-drawing-color black
+  gis:fill zones3-dataset 1
 
   ; snippet of code that asks if there is a road at the specific patch
   ; not currently used
   ask patches
      [if gis:intersects? streets-dataset self
          [set road-here 1 ] ]
+  ; is there a spawn zone here?
+  ask patches [
+    (if-else (gis:intersects? zones1-dataset self) [
+      set zone-here 1
+    ] (gis:intersects? zones2-dataset self) [
+      set zone-here 2
+    ] (gis:intersects? zones3-dataset self) [
+      set zone-here 3
+    ])
+  ]
 
   ; make road graph from road dataset
   make-road-network
@@ -47,27 +65,34 @@ to setup
 
   ; create pedestrians
   create-families 4500 [
-    set color red
-    set current one-of nodes ; random start location
+    set color brown
+    ; decide which evac zone to go to
+    let rand random-float 1
+    (if-else rand < 0.4 [
+      move-to one-of patches with [zone-here = 1]
+    ] rand < 0.7 [
+      move-to one-of patches with [zone-here = 2]
+    ] [
+      move-to one-of patches with [zone-here = 3]
+    ])
     set safe? false
     set casualty? false
-    move-to current
+    set current min-one-of nodes [distance myself] ; close
     let start current
     ; set the target shelter as the one with the shortest distance
     set target min-one-of shelters [ nw:distance-to start ]
     set evac? false
-    let rand random-float 1
-    (if-else rand < 0.25 [
+    let rand1 random-float 1
+    (if-else rand1 < 0.25 [
       set evac-time 300
-    ] rand < 0.5 [
+    ] rand1 < 0.5 [
       set evac-time 600
-    ] rand < 0.75 [
+    ] rand1 < 0.75 [
       set evac-time 1200
     ] [
       set evac-time 2400
     ])
   ]
-
 end
 
 to make-road-network
@@ -123,6 +148,7 @@ to go
     ; is it time for this agent to evac?
     if (ticks >= evac-time) [
       set evac? true
+      move-to current
     ]
   ]
   ask families [
