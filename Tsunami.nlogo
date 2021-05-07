@@ -179,13 +179,15 @@ to go
           move-to next-loc
           set current next-loc
         ] [
+          ; get next node to move to
           let next-loc first path
           let dist distance next-loc
-          ;print(dist)
           face next-loc
+          ; move along the path to the next node
           ifelse 3 < dist [
             jump 3
           ] [
+            ; reached next node
             move-to next-loc
             set current next-loc
           ]

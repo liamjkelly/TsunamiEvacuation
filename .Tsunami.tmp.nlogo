@@ -170,9 +170,28 @@ to go
       ask current [
           set path but-first nw:turtles-on-path-to t
         ]
+      ifelse (length path != 0) [
+        ; get first node on the path and move to it, make it the current location
+        ifelse not traffic-flow [
+          ; get first node on the path and move to it, make it the current location
+          let next-loc first path
+          face next-loc
+          move-to next-loc
+          set current next-loc
+        ] [
 
-
-      ]  [
+          let next-loc first path
+          let dist distance next-loc
+          ;print(dist)
+          face next-loc
+          ifelse 3 < dist [
+            jump 3
+          ] [
+            move-to next-loc
+            set current next-loc
+          ]
+        ]
+      ] [
         set safe? true
         set color green
         set shape "circle"
