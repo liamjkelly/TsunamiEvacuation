@@ -1,0 +1,60 @@
+<PAMDataset>
+  <Metadata>
+    <MDI key="AREA_OR_POINT">Area</MDI>
+    <MDI key="bathy#grid_mapping">crs</MDI>
+    <MDI key="bathy#long_name">Grid Bathymetry</MDI>
+    <MDI key="bathy#missing_value">-9.9999998e+33</MDI>
+    <MDI key="bathy#positive">down</MDI>
+    <MDI key="bathy#standard_name">sea_floor_depth_below_geoid</MDI>
+    <MDI key="bathy#units">meters</MDI>
+    <MDI key="bathy#VerticalDatum">urn:x-noaa:def:datum:noaa::MHW</MDI>
+    <MDI key="bathy#_FillValue">-9.9999998e+33</MDI>
+    <MDI key="crs#crs_wkt">GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]</MDI>
+    <MDI key="crs#grid_mapping_name">latitude_longitude</MDI>
+    <MDI key="crs#inverse_flattening">298.257223563</MDI>
+    <MDI key="crs#longitude_of_prime_meridian">0</MDI>
+    <MDI key="crs#semi_major_axis">6378137</MDI>
+    <MDI key="crs#spatial_ref">GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]</MDI>
+    <MDI key="lat#long_name">Latitude</MDI>
+    <MDI key="lat#point_spacing">even</MDI>
+    <MDI key="lat#resolution">1.20 arcmin</MDI>
+    <MDI key="lat#units">degrees_north</MDI>
+    <MDI key="lon#long_name">Longitude</MDI>
+    <MDI key="lon#point_spacing">even</MDI>
+    <MDI key="lon#resolution">1.20 arcmin</MDI>
+    <MDI key="lon#units">degrees_east</MDI>
+    <MDI key="NC_GLOBAL#Conventions">CF-1.6,ACDD-1.3</MDI>
+    <MDI key="NC_GLOBAL#date_created">2011-12-05</MDI>
+    <MDI key="NC_GLOBAL#geospatial_bounds_vertical_crs">EPSG:5868</MDI>
+    <MDI key="NC_GLOBAL#geospatial_lat_max">49.99</MDI>
+    <MDI key="NC_GLOBAL#geospatial_lat_min">43.01</MDI>
+    <MDI key="NC_GLOBAL#geospatial_lon_max">236.98</MDI>
+    <MDI key="NC_GLOBAL#geospatial_lon_min">232</MDI>
+    <MDI key="NC_GLOBAL#geospatial_vertical_positive">down</MDI>
+    <MDI key="NC_GLOBAL#history">ncaedit.scm SeasideOR_A.nc -e nc-global:id:doi 10.7289/V56W9830:text
+2016-02-24 12:50:06 PST: most2netcdf -x seaside_forecastgridsLW.xml seaside_run2d/swwa72_crop.exp.c</MDI>
+    <MDI key="NC_GLOBAL#id">doi 10.7289/V56W9830</MDI>
+    <MDI key="NC_GLOBAL#institution">US-Department of Commerce/National Oceanic and Atmospheric Administration/ Oceanic and Atmospheric Research/Pacific Marine Environmental Laboratory/ NOAA Center for Tsunami Research</MDI>
+    <MDI key="NC_GLOBAL#keywords">MOST, tsunami, bathymetry, nested grid, grid, inundation model</MDI>
+    <MDI key="NC_GLOBAL#references">http://nctr.pmel.noaa.gov/sim.html</MDI>
+    <MDI key="NC_GLOBAL#source">Seaside, Oregon 1/3 arc-sec Digital Elevation Model, Southwest Washington 10 arc-sec Digital Elevation Model, Pacific Northwest 36 arc-sec Digital Elevation Model</MDI>
+    <MDI key="NC_GLOBAL#summary">The Seaside, Oregon Forecast Model Grids provides bathymetric data strictly for tsunami inundation modeling with the Method of Splitting Tsunami (MOST) model. MOST is a suite of numerical simulation codes capable of simulating three processes of tsunami evolution: generation, transoceanic propagation, and inundation of dry land. Tsunami waves are computationally propagated across a set of three nested grids (A, B, and C), each of which is successively finer in resolution, moving from offshore to onshore. Nearshore details are resolved to the point that model output can be directly compared with tide gauge observations and can provide estimates of wave arrival time, wave amplitude and simulation of wave inundation onto dry land. A Grid Resolution: 72 arc-sec. B Grid Resolution: 12 arc-sec. C Grid Resolution: 1.3 arc-sec.</MDI>
+    <MDI key="NC_GLOBAL#title">Seaside, Oregon Tsunami Forecast Grids for MOST Model</MDI>
+    <MDI key="NC_GLOBAL#version">1.0</MDI>
+  </Metadata>
+  <PAMRasterBand band="1">
+    <UnitType>meters</UnitType>
+    <ColorInterp>Gray</ColorInterp>
+    <Metadata>
+      <MDI key="grid_mapping">crs</MDI>
+      <MDI key="long_name">Grid Bathymetry</MDI>
+      <MDI key="missing_value">-9.9999998e+33</MDI>
+      <MDI key="NETCDF_VARNAME">bathy</MDI>
+      <MDI key="positive">down</MDI>
+      <MDI key="standard_name">sea_floor_depth_below_geoid</MDI>
+      <MDI key="units">meters</MDI>
+      <MDI key="VerticalDatum">urn:x-noaa:def:datum:noaa::MHW</MDI>
+      <MDI key="_FillValue">-9.9999998e+33</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>

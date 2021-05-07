@@ -1,6 +1,6 @@
 extensions [gis time nw]
 patches-own[road-here zone-here]
-globals [streets-dataset water-dataset zones1-dataset zones2-dataset zones3-dataset meters shelters tsunami]
+globals [streets-dataset water-dataset tsunami zones1-dataset zones2-dataset zones3-dataset meters shelters ]
 breed [families family]
 breed [nodes node]
 families-own [loc1 safe? casualty? evac? target current evac-time]
@@ -19,6 +19,7 @@ to setup
   set zones1-dataset gis:load-dataset "GISData/Zones/Zones1.shp"
   set zones2-dataset gis:load-dataset "GISData/Zones/Zones2.shp"
   set zones3-dataset gis:load-dataset "GISData/Zones/Zones3.shp"
+  set tsunami gis:load-dataset "GISData/inundation/WaterStart.asc"
 
   ; Set the world envelope to the union of all of our dataset's envelopes
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of streets-dataset)
@@ -40,6 +41,7 @@ to setup
   gis:fill zones2-dataset 1
   gis:set-drawing-color black
   gis:fill zones3-dataset 1
+  gis:paint tsunami 50
 
   ; snippet of code that asks if there is a road at the specific patch
   ; not currently used
@@ -143,30 +145,33 @@ to make-road-network
 end
 
 to go
+  if (ticks = 10) [
+    set tsunami gis:load-dataset "GISData/inundation/Water10.asc"
+    gis:paint tsunami 50
+  ]
   ; movement
   ask families [
     ; is it time for this agent to evac?
     if (ticks >= evac-time) [
       set evac? true
       move-to current
+
+
     ]
   ]
   ask families [
     ; if not at the shelter, move to the next node in the path
     ; if at the shelter, mark the agent safe
+
     if (evac? = true) [
       let path nobody ; no path yet
       let t target ; save shelter into local variable
                    ; find the path to the target shelter
       ask current [
-        set path but-first nw:turtles-on-path-to t
-      ]
-      ifelse (length path != 0) [
-        ; get first node on the path and move to it, make it the current location
-        let next-loc first path
-        face next-loc
-        move-to next-loc
-        set current next-loc
+          set path but-first nw:turtles-on-path-to t
+        ]
+
+
       ]  [
         set safe? true
         set color green
@@ -190,6 +195,29 @@ to go
 end
 
 to outdated-go
+   ;ask families [
+    ; if not at the shelter, move to the next node in the path
+    ; if at the shelter, mark the agent safe
+    ;if (evac? = true) [
+      ;let path nobody ; no path yet
+      ;let t target ; save shelter into local variable
+                   ; find the path to the target shelter
+      ;ask current [
+      ;  set path but-first nw:turtles-on-path-to t
+      ;]
+      ;ifelse (length path != 0) [
+        ; get first node on the path and move to it, make it the current location
+      ;  let next-loc first path
+      ;  face next-loc
+      ;  move-to next-loc
+      ;  set current next-loc
+      ;]  [
+     ;   set safe? true
+       ; set color green
+     ;   set shape "circle"
+     ; ]
+   ; ]
+  ;]
   ;let target one-of nodes with [ shelter? = true ]
     ;if target != nobody [
       ; Remember the starting node
@@ -217,9 +245,9 @@ to outdated-go
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-19
+11
 10
-677
+669
 669
 -1
 -1
@@ -244,10 +272,10 @@ ticks
 30.0
 
 PLOT
-713
-154
-913
-304
+744
+226
+944
+376
 Number Evacuated
 ticks
 NIL
@@ -262,10 +290,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count families with [safe? = true]"
 
 PLOT
-714
-321
-914
-471
+745
+393
+945
+543
 Number of Casualties
 NIL
 NIL
@@ -280,10 +308,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count families with [casualty? = true]"
 
 BUTTON
-715
-21
-792
-54
+716
+23
+793
+56
 Initialize
 setup
 NIL
@@ -297,10 +325,10 @@ NIL
 1
 
 BUTTON
-821
-21
-884
-54
+822
+23
+885
+56
 GO
 go
 T
@@ -321,6 +349,17 @@ SWITCH
 social-pressure
 social-pressure
 0
+1
+-1000
+
+SWITCH
+215
+701
+332
+734
+traffic-flow
+traffic-flow
+1
 1
 -1000
 
