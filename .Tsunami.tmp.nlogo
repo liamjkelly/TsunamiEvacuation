@@ -34,11 +34,11 @@ to setup
   gis:set-drawing-color blue
   gis:draw water-dataset 1
   ; draw evac zones
-  gis:set-drawing-color red
+  gis:set-drawing-color black
   gis:fill zones1-dataset 1
-  gis:set-drawing-color blue
+  gis:set-drawing-color black
   gis:fill zones2-dataset 1
-  gis:set-drawing-color
+  gis:set-drawing-color black
   gis:fill zones3-dataset 1
 
   ; snippet of code that asks if there is a road at the specific patch
@@ -176,11 +176,13 @@ to go
   ]
   ; social pressure
   ; if x surrounding agents are evacuating, I will start to evacuate
-  ask families [
-    if (evac? = false) [
-      let near-evac families in-radius 2 with [evac? = true]
-      if count near-evac >= 20 [
-        set evac? true
+  if social-pressure [
+    ask families [
+      if (evac? = false) [
+        let near-evac families in-radius 2 with [evac? = true]
+        if count near-evac >= 20 [
+          set evac? true
+        ]
       ]
     ]
   ]
@@ -310,6 +312,17 @@ NIL
 NIL
 NIL
 1
+
+SWITCH
+42
+701
+181
+734
+social-pressure
+social-pressure
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?

@@ -176,11 +176,13 @@ to go
   ]
   ; social pressure
   ; if x surrounding agents are evacuating, I will start to evacuate
-  ask families [
-    if (evac? = false) [
-      let near-evac families in-radius 2 with [evac? = true]
-      if count near-evac >= 20 [
-        set evac? true
+  if social-pressure [
+    ask families [
+      if (evac? = false) [
+        let near-evac families in-radius 2 with [evac? = true]
+        if count near-evac >= 20 [
+          set evac? true
+        ]
       ]
     ]
   ]
@@ -310,6 +312,17 @@ NIL
 NIL
 NIL
 1
+
+SWITCH
+42
+701
+181
+734
+social-pressure
+social-pressure
+1
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
