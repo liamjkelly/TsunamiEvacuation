@@ -4,7 +4,7 @@ globals [streets-dataset water-dataset tsunami zones1-dataset zones2-dataset zon
 breed [families family]
 breed [nodes node]
 families-own [loc1 safe? casualty? evac? target current evac-time]
-nodes-own [shelter?]
+nodes-own [shelter? capacity]
 
 to setup
   clear-all
@@ -181,16 +181,23 @@ to go
         ] [
           ; get next node to move to
           let next-loc first path
-          let dist distance next-loc
-          face next-loc
-          ; move along the path to the next node
-          ifelse 3 < dist [
-            jump 3
-          ] [
-            ; reached next node
+          if [capacity] of next-loc < 10 and not [shelter?] of next-loc [
+            face next-loc
             move-to next-loc
+            ask current [ set capacity 0 ]
+            ask next-loc [ set capacity 1 ]
             set current next-loc
           ]
+          ;let dist distance next-loc
+          ;face next-loc
+          ; move along the path to the next node
+          ;ifelse 3 < dist [
+          ;  jump 3
+          ;] [
+            ; reached next node
+           ; move-to next-loc
+           ; set current next-loc
+          ;]
         ]
       ] [
         set safe? true
@@ -379,7 +386,7 @@ SWITCH
 734
 traffic-flow
 traffic-flow
-1
+0
 1
 -1000
 
