@@ -70,8 +70,8 @@ to setup
 
   ; load tsunami files, set initial condition
   r:eval "library(ncdf4)"
-  r:eval "data<-nc_open(\"C:/Users/Liam/Desktop/CS 5274/TsunamiEvacuation/GISData/inundation/trimmedwaveampt40-200.nc\")"
-  r:eval "ncvar_get(data, \"wave_amp\") -> water"
+  r:eval "data<-nc_open(\"C:/Users/Liam/Desktop/CS 5274/TsunamiEvacuation/GISData/inundation/finalflowdeptht40-200.nc\")"
+  r:eval "ncvar_get(data, \"flow_depth\") -> water"
   r:eval (word "water2<-as.data.frame(t(water[,," 1 "]))")
   set flooding r:get "water2"
   ask patches [ get-water ]
@@ -245,7 +245,6 @@ to go
   if (ticks <= 5772) [
     if (ticks mod 29 = 1) [
       let tmp ((ticks + 28) / 29)
-      print ticks
       r:eval (word "water2<-as.data.frame(t(water[,," tmp "]))")
       set flooding r:get "water2"
       ; print r:get "water2"
@@ -254,7 +253,6 @@ to go
       ask families [
         ; print [ water ] of patch-here
         if ([ water ] of patch-here > 2 and not casualty?) [
-          print "dead"
           set casualty? true
         ]
       ]
@@ -373,10 +371,10 @@ ticks
 1.0
 
 PLOT
-990
-252
-1190
-402
+939
+253
+1139
+403
 Number Evacuated
 ticks
 NIL
@@ -391,10 +389,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count families with [safe? = true]"
 
 PLOT
-991
-419
-1191
-569
+940
+420
+1140
+570
 Number of Casualties
 NIL
 NIL
