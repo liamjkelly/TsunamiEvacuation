@@ -476,6 +476,17 @@ traffic-flow
 1
 -1000
 
+INPUTBOX
+676
+692
+831
+752
+capacityAmount
+0.0
+1
+0
+Number
+
 @#$#@#$#@
 ## WHAT IS IT?
 
