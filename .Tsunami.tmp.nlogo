@@ -35,12 +35,12 @@ to setup
   gis:set-drawing-color blue
   gis:draw water-dataset 1
   ; draw evac zones
-  gis:set-drawing-color black
-  gis:fill zones1-dataset 1
-  gis:set-drawing-color black
-  gis:fill zones2-dataset 1
-  gis:set-drawing-color black
-  gis:fill zones3-dataset 1
+  ;gis:set-drawing-color black
+  ;gis:fill zones1-dataset 1
+  ;gis:set-drawing-color black
+  ;gis:fill zones2-dataset 1
+  ;gis:set-drawing-color black
+  ;gis:fill zones3-dataset 1
   ; gis:paint tsunami 50
 
   ; snippet of code that asks if there is a road at the specific patch
@@ -65,17 +65,26 @@ to setup
   ; save all shelters into agentset
   set shelters nodes with [ shelter? = true ]
 
+
+  ; load tsunami files, set initial condition
+  r:eval "library(ncdf4)"
+  r:eval "data<-nc_open(\"/Users/davidatwood/Documents/vanderbiltclasses/21spring/cs3274/finalproject/trimmedwaveampt.nc\")"
+  r:eval "ncvar_get(data, \"wave_amp\") -> water"
+  r:eval (word "water2<-as.data.frame(t(water[,," 1 "]))")
+  set flooding r:get "water2"
+  ask patches [ get-water ]
+
   ; create pedestrians
   create-families 4500 [
     set color brown
     ; decide which evac zone to go to
     let rand random-float 1
     (if-else rand < 0.4 [
-      move-to one-of patches with [zone-here = 1]
+      move-to one-of patches with [zone-here = 1 and not ((water <= 0) or (water >= 0))]
     ] rand < 0.7 [
-      move-to one-of patches with [zone-here = 2]
+      move-to one-of patches with [zone-here = 2 and not ((water <= 0) or (water >= 0))]
     ] [
-      move-to one-of patches with [zone-here = 3]
+      move-to one-of patches with [zone-here = 3 and not ((water <= 0) or (water >= 0))]
     ])
     set safe? false
     set casualty? false
@@ -96,14 +105,6 @@ to setup
     ])
   ]
 
-  ; load tsunami files, set initial condition
-  r:eval "library(ncdf4)"
-  r:eval "data<-nc_open(\"/Users/davidatwood/Documents/vanderbiltclasses/21spring/cs3274/finalproject/trimmedwaveamp.nc\")"
-  r:eval "ncvar_get(data, \"wave_amp\") -> water"
-
-  r:eval (word "water2<-as.data.frame(t(water[,," 1 "]))")
-  set flooding r:get "water2"
-  ask patches [ get-water ]
 end
 
 to make-road-network
@@ -161,37 +162,139 @@ to go
   ; movement
   ask families [
     ; is it time for this agent to evac?
-    if (ticks >= evac-time) [
+    if (ticks >= evac-time and not casualty?) [
       set evac? true
       move-to current
 
 
     ]
   ]
+  ask families [
+    ; if not at the shelter, move to the next node in the path
+    ; if at the shelter, mark the agent safe
 
+    if (evac? = true and not casualty?) [
+      let path nobody ; no path yet
+      let t target ; save shelter into local variable
+                   ; find the path to the target shelter
+      ask current [
+          set path but-first nw:turtles-on-path-to t
+        ]
+      ifelse (length path != 0) [
+        ; get first node on the path and move to it, make it the current location
+        ifelse not traffic-flow [
+          ; get first node on the path and move to it, make it the current location
+          let next-loc first path
+          face next-loc
+          move-to next-loc
+          set current next-loc
+        ] [
+          ; get next node to move to
+          let next-loc first path
+          ifelse [capacity] of next-loc < capacityAmount and not [shelter?] of next-loc [
+            face next-loc
+            move-to next-loc
+            ask current [ set capacity capacity - 1 ]
+            ask next-loc [ set capacity capacity + 1 ]
+            set current next-loc
+          ]
+
+
+          [
+
+           ifelse[shelter?] of next-loc[
+            face next-loc
+            move-to next-loc
+            ask current [ set capacity capacity - 1 ]
+            set current next-loc
+            ]
+
+            [
+            let minDist 9999999999999
+            let nextShelter nobody
+
+            ask shelters [
+
+            if(self != t)[
+              let tempDist 0
+
+              let temp but-first nw:turtles-on-path-to t
+              set tempDist length temp
+
+                if (tempDist < minDist)[
+                  set minDist tempDist
+                  set nextShelter self
+                ]
+
+
+              ]
+
+            ]
+
+             set target nextShelter
+          ]
+          ]
+
+
+
+          if [shelter?] of next-loc[
+            face next-loc
+            move-to next-loc
+            ask current [ set capacity capacity - 1 ]
+            set current next-loc
+          ]
+
+
+          ;let dist distance next-loc
+          ;face next-loc
+          ; move along the path to the next node
+          ;ifelse 3 < dist [
+          ;  jump 3
+          ;] [
+            ; reached next node
+           ; move-to next-loc
+           ; set current next-loc
+          ;]
+        ]
+      ] [
+        set safe? true
+        set color green
+        set shape "circle"
+      ]
+    ]
+  ]
   ; social pressure
   ; if x surrounding agents are evacuating, I will start to evacuate
   if social-pressure [
     ask families [
-      if (evac? = false) [
-        let near-evac families in-radius 2 with [evac? = true]
+      if (evac? = false and not casualty?) [
+        let near-evac families in-radius 2 with [evac? = true and not casualty?]
         if count near-evac >= 20 [
           set evac? true
         ]
       ]
     ]
   ]
-  tick
-
-  ; tsunami
-  if (ticks <= 5771) [
-    if (ticks mod 29 = 0) [
-      let tmp ticks / 29
+  ; update tsunami
+  if (ticks <= 5772) [
+    if (ticks mod 29 = 1) [
+      let tmp ((ticks + 28) / 29)
+      print ticks
       r:eval (word "water2<-as.data.frame(t(water[,," tmp "]))")
       set flooding r:get "water2"
+      ; print r:get "water2"
       ask patches [ get-water ]
+      ; update casualties
+      ask families [
+        ; print [ water ] of patch-here
+        if ([ water ] of patch-here > 200 and not casualty?) [
+          print "dead"
+          set casualty? true
+        ]
+      ]
     ]
   ]
+  tick
 
 end
 
@@ -199,19 +302,20 @@ to get-water
   let y pxcor let x pycor
   set water item x (item y flooding)
     (ifelse
-    water < -200 [
+    water < -20 [
       set pcolor 91 ]
-    water < -100 [
+    water < -10 [
       set pcolor 92 ]
     water < 0 [
       set pcolor 93 ]
-    water < 100 [
+    water < 10 [
       set pcolor 94 ]
-    water < 200 [
+    water < 20 [
       set pcolor 95 ]
-    water > 200 [
+    water < 30 [
       set pcolor 96 ]
-    )
+    water >= 30 [
+      set pcolor 97 ])
 end
 
 to outdated-go
@@ -278,8 +382,8 @@ GRAPHICS-WINDOW
 1
 1
 0
-1
-1
+0
+0
 1
 0
 148
@@ -382,6 +486,17 @@ traffic-flow
 0
 1
 -1000
+
+INPUTBOX
+676
+692
+831
+752
+capacityAmount
+0.0
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?
