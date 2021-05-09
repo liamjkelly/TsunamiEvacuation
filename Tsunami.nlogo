@@ -1,6 +1,6 @@
-extensions [gis time nw]
-patches-own[road-here zone-here]
-globals [streets-dataset water-dataset tsunami zones1-dataset zones2-dataset zones3-dataset meters shelters ]
+extensions [gis time nw r]
+patches-own[road-here zone-here water]
+globals [streets-dataset water-dataset tsunami zones1-dataset zones2-dataset zones3-dataset meters shelters flooding]
 breed [families family]
 breed [nodes node]
 families-own [loc1 safe? casualty? evac? target current evac-time]
@@ -19,7 +19,7 @@ to setup
   set zones1-dataset gis:load-dataset "GISData/Zones/Zones1.shp"
   set zones2-dataset gis:load-dataset "GISData/Zones/Zones2.shp"
   set zones3-dataset gis:load-dataset "GISData/Zones/Zones3.shp"
-  set tsunami gis:load-dataset "GISData/inundation/WaterStart.asc"
+  ; set tsunami gis:load-dataset "GISData/inundation/WaterStart.asc"
 
   ; Set the world envelope to the union of all of our dataset's envelopes
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of streets-dataset)
@@ -41,7 +41,7 @@ to setup
   gis:fill zones2-dataset 1
   gis:set-drawing-color black
   gis:fill zones3-dataset 1
-  gis:paint tsunami 50
+  ; gis:paint tsunami 50
 
   ; snippet of code that asks if there is a road at the specific patch
   ; not currently used
@@ -95,6 +95,15 @@ to setup
       set evac-time 2400
     ])
   ]
+
+  ; load tsunami files, set initial condition
+  r:eval "library(ncdf4)"
+  r:eval "data<-nc_open(\"/Users/davidatwood/Documents/vanderbiltclasses/21spring/cs3274/finalproject/TsunamiEvacuation/GISData/inundation/trimmedflowdepth.nc\")"
+  r:eval "ncvar_get(data, \"flow_depth\") -> water"
+
+  r:eval (word "water2<-as.data.frame(t(water[,," 1 "]))")
+  set flooding r:get "water2"
+  ask patches [ get-water ]
 end
 
 to make-road-network
@@ -145,10 +154,10 @@ to make-road-network
 end
 
 to go
-  if (ticks = 10) [
-    set tsunami gis:load-dataset "GISData/inundation/Water10.asc"
-    gis:paint tsunami 50
-  ]
+  ;if (ticks = 10) [
+  ;  set tsunami gis:load-dataset "GISData/inundation/Water10.asc"
+  ;  gis:paint tsunami 50
+  ;]
   ; movement
   ask families [
     ; is it time for this agent to evac?
@@ -219,6 +228,23 @@ to go
     ]
   ]
   tick
+
+  ; tsunami
+  if (ticks <= 5771) [
+    if (ticks mod 29 = 0) [
+      let tmp ticks / 29
+      r:eval (word "water2<-as.data.frame(t(water[,," tmp "]))")
+      set flooding r:get "water2"
+      ask patches [ get-water ]
+    ]
+  ]
+
+end
+
+to get-water
+  let y pxcor let x pycor
+  set water item x (item y flooding)
+  if (water > 0) [ set pcolor blue ]
 end
 
 to outdated-go
@@ -274,11 +300,11 @@ end
 GRAPHICS-WINDOW
 11
 10
-669
-669
+639
+463
 -1
 -1
-10.0
+4.0
 1
 10
 1
@@ -288,15 +314,15 @@ GRAPHICS-WINDOW
 1
 1
 1
--32
-32
--32
-32
+0
+154
+0
+110
 1
 1
 1
 ticks
-30.0
+1.0
 
 PLOT
 744
