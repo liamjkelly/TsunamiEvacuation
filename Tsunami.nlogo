@@ -1,6 +1,6 @@
 extensions [gis time nw r]
-patches-own[road-here zone-here water]
-globals [streets-dataset water-dataset tsunami zones1-dataset zones2-dataset zones3-dataset meters shelters flooding]
+patches-own[road-here zone-here water bridge-here]
+globals [streets-dataset water-dataset tsunami zones1-dataset zones2-dataset zones3-dataset bridges-dataset meters shelters flooding]
 breed [families family]
 breed [nodes node]
 families-own [loc1 safe? casualty? evac? target current evac-time]
@@ -19,21 +19,25 @@ to setup
   set zones1-dataset gis:load-dataset "GISData/Zones/Zones1.shp"
   set zones2-dataset gis:load-dataset "GISData/Zones/Zones2.shp"
   set zones3-dataset gis:load-dataset "GISData/Zones/Zones3.shp"
+  set bridges-dataset gis:load-dataset "GISData/shape/Bridges.shp"
   ; set tsunami gis:load-dataset "GISData/inundation/WaterStart.asc"
 
   ; Set the world envelope to the union of all of our dataset's envelopes
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of streets-dataset)
-                                                (gis:envelope-of water-dataset)
-                                                (gis:envelope-of zones1-dataset)
-                                                (gis:envelope-of zones2-dataset)
-                                                (gis:envelope-of zones3-dataset)
-                                               )
+    (gis:envelope-of water-dataset)
+    (gis:envelope-of zones1-dataset)
+    (gis:envelope-of zones2-dataset)
+    (gis:envelope-of zones3-dataset)
+  )
   ; draw streets
   gis:set-drawing-color white
   gis:draw streets-dataset 1
   ; draw rivers (for background)
   gis:set-drawing-color blue
   gis:draw water-dataset 1
+  ; draw bridges
+  gis:set-drawing-color black
+  gis:fill bridges-dataset 1
   ; draw evac zones
   ;gis:set-drawing-color black
   ;gis:fill zones1-dataset 1
@@ -43,12 +47,7 @@ to setup
   ;gis:fill zones3-dataset 1
   ; gis:paint tsunami 50
 
-  ; snippet of code that asks if there is a road at the specific patch
-  ; not currently used
-  ask patches
-     [if gis:intersects? streets-dataset self
-         [set road-here 1 ] ]
-  ; is there a spawn zone here?
+  ; is there a spawn zone here? is there a bridge here?
   ask patches [
     (if-else (gis:intersects? zones1-dataset self) [
       set zone-here 1
@@ -57,6 +56,9 @@ to setup
     ] (gis:intersects? zones3-dataset self) [
       set zone-here 3
     ])
+    if gis:intersects? bridges-dataset self [
+      set bridge-here 1
+    ]
   ]
 
   ; make road graph from road dataset
@@ -68,7 +70,7 @@ to setup
 
   ; load tsunami files, set initial condition
   r:eval "library(ncdf4)"
-  r:eval "data<-nc_open(\"/Users/davidatwood/Documents/vanderbiltclasses/21spring/cs3274/finalproject/TsunamiEvacuation/GISData/inundation/trimmedwaveamp.nc\")"
+  r:eval "data<-nc_open(\"C:/Users/Liam/Desktop/CS 5274/TsunamiEvacuation/GISData/inundation/trimmedwaveampt40-200.nc\")"
   r:eval "ncvar_get(data, \"wave_amp\") -> water"
   r:eval (word "water2<-as.data.frame(t(water[,," 1 "]))")
   set flooding r:get "water2"
@@ -115,11 +117,11 @@ to make-road-network
   foreach gis:feature-list-of streets-dataset [ ; each polyline
 
     vert -> foreach gis:vertex-lists-of vert [ ; each polyline segment / coordinate pair
-      ;
+                                               ;
       coord -> foreach coord [ ; each coordinate
         loc -> let location gis:location-of loc ; get the location
         if not empty? location [ ; some coordinates are empty []
-          ; create a node at this location and set the coordinates of it as the coords of location
+                                 ; create a node at this location and set the coordinates of it as the coords of location
           create-nodes 1 [
             set color green
             set size 0.6
@@ -155,18 +157,12 @@ to make-road-network
 end
 
 to go
-  ;if (ticks = 10) [
-  ;  set tsunami gis:load-dataset "GISData/inundation/Water10.asc"
-  ;  gis:paint tsunami 50
-  ;]
   ; movement
   ask families [
     ; is it time for this agent to evac?
     if (ticks >= evac-time and not casualty?) [
       set evac? true
       move-to current
-
-
     ]
   ]
   ask families [
@@ -178,8 +174,8 @@ to go
       let t target ; save shelter into local variable
                    ; find the path to the target shelter
       ask current [
-          set path but-first nw:turtles-on-path-to t
-        ]
+        set path but-first nw:turtles-on-path-to t
+      ]
       ifelse (length path != 0) [
         ; get first node on the path and move to it, make it the current location
         ifelse not traffic-flow [
@@ -197,64 +193,34 @@ to go
             ask current [ set capacity capacity - 1 ]
             ask next-loc [ set capacity capacity + 1 ]
             set current next-loc
-          ]
+          ] [
 
+            ifelse[shelter?] of next-loc[
+              face next-loc
+              move-to next-loc
+              ask current [ set capacity capacity - 1 ]
+              set current next-loc
+            ] [
+              let minDist 9999999999999
+              let nextShelter nobody
 
-          [
+              ask shelters [
 
-           ifelse[shelter?] of next-loc[
-            face next-loc
-            move-to next-loc
-            ask current [ set capacity capacity - 1 ]
-            set current next-loc
-            ]
+                if(self != t)[
+                  let tempDist 0
 
-            [
-            let minDist 9999999999999
-            let nextShelter nobody
+                  let temp but-first nw:turtles-on-path-to t
+                  set tempDist length temp
 
-            ask shelters [
-
-            if(self != t)[
-              let tempDist 0
-
-              let temp but-first nw:turtles-on-path-to t
-              set tempDist length temp
-
-                if (tempDist < minDist)[
-                  set minDist tempDist
-                  set nextShelter self
+                  if (tempDist < minDist)[
+                    set minDist tempDist
+                    set nextShelter self
+                  ]
                 ]
-
-
               ]
-
+              set target nextShelter
             ]
-
-             set target nextShelter
           ]
-          ]
-
-
-
-          if [shelter?] of next-loc[
-            face next-loc
-            move-to next-loc
-            ask current [ set capacity capacity - 1 ]
-            set current next-loc
-          ]
-
-
-          ;let dist distance next-loc
-          ;face next-loc
-          ; move along the path to the next node
-          ;ifelse 3 < dist [
-          ;  jump 3
-          ;] [
-            ; reached next node
-           ; move-to next-loc
-           ; set current next-loc
-          ;]
         ]
       ] [
         set safe? true
@@ -301,7 +267,7 @@ end
 to get-water
   let y pxcor let x pycor
   set water item x (item y flooding)
-    (ifelse
+  (ifelse
     water < -20 [
       set pcolor 91 ]
     water < -10 [
@@ -319,53 +285,64 @@ to get-water
 end
 
 to outdated-go
-   ;ask families [
-    ; if not at the shelter, move to the next node in the path
-    ; if at the shelter, mark the agent safe
-    ;if (evac? = true) [
-      ;let path nobody ; no path yet
-      ;let t target ; save shelter into local variable
-                   ; find the path to the target shelter
-      ;ask current [
-      ;  set path but-first nw:turtles-on-path-to t
-      ;]
-      ;ifelse (length path != 0) [
-        ; get first node on the path and move to it, make it the current location
-      ;  let next-loc first path
-      ;  face next-loc
-      ;  move-to next-loc
-      ;  set current next-loc
-      ;]  [
-     ;   set safe? true
-       ; set color green
-     ;   set shape "circle"
-     ; ]
-   ; ]
+
+  ;let dist distance next-loc
+  ;face next-loc
+  ; move along the path to the next node
+  ;ifelse 3 < dist [
+  ;  jump 3
+  ;] [
+  ; reached next node
+  ; move-to next-loc
+  ; set current next-loc
+  ;]
+  ;ask families [
+  ; if not at the shelter, move to the next node in the path
+  ; if at the shelter, mark the agent safe
+  ;if (evac? = true) [
+  ;let path nobody ; no path yet
+  ;let t target ; save shelter into local variable
+  ; find the path to the target shelter
+  ;ask current [
+  ;  set path but-first nw:turtles-on-path-to t
+  ;]
+  ;ifelse (length path != 0) [
+  ; get first node on the path and move to it, make it the current location
+  ;  let next-loc first path
+  ;  face next-loc
+  ;  move-to next-loc
+  ;  set current next-loc
+  ;]  [
+  ;   set safe? true
+  ; set color green
+  ;   set shape "circle"
+  ; ]
+  ; ]
   ;]
   ;let target one-of nodes with [ shelter? = true ]
-    ;if target != nobody [
-      ; Remember the starting node
-      ;let current loc1
-      ; Define a path variable from the current node- take all but
-      ; the first item (as first item is current node)
-      ;let path nobody
-      ;ask current [
-       ; set path but-first nw:turtles-on-path-to target
-      ;]
-      ; Move along the path node-to-node
-     ;foreach path [
-       ; next-target ->
-       ; face next-target
-      ;  move-to next-target
-      ;]
-      ;set safe? true
-      ;set color green
-      ;set shape "circle"
-    ;]
-    ;let new-location one-of [link-neighbors] of loc1
-    ;face new-location  ;; not strictly necessary, but improves the visuals a bit
-    ;move-to new-location
-    ;set loc1 new-location
+  ;if target != nobody [
+  ; Remember the starting node
+  ;let current loc1
+  ; Define a path variable from the current node- take all but
+  ; the first item (as first item is current node)
+  ;let path nobody
+  ;ask current [
+  ; set path but-first nw:turtles-on-path-to target
+  ;]
+  ; Move along the path node-to-node
+  ;foreach path [
+  ; next-target ->
+  ; face next-target
+  ;  move-to next-target
+  ;]
+  ;set safe? true
+  ;set color green
+  ;set shape "circle"
+  ;]
+  ;let new-location one-of [link-neighbors] of loc1
+  ;face new-location  ;; not strictly necessary, but improves the visuals a bit
+  ;move-to new-location
+  ;set loc1 new-location
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
