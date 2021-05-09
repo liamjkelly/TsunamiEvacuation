@@ -253,7 +253,7 @@ to go
       ; update casualties
       ask families [
         ; print [ water ] of patch-here
-        if ([ water ] of patch-here > 200 and not casualty?) [
+        if ([ water ] of patch-here > 2 and not casualty?) [
           print "dead"
           set casualty? true
         ]
@@ -348,11 +348,11 @@ end
 GRAPHICS-WINDOW
 11
 10
-615
-463
+764
+574
 -1
 -1
-4.0
+5.0
 1
 10
 1
@@ -373,10 +373,10 @@ ticks
 1.0
 
 PLOT
-744
-226
-944
-376
+990
+252
+1190
+402
 Number Evacuated
 ticks
 NIL
@@ -391,10 +391,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count families with [safe? = true]"
 
 PLOT
-745
-393
-945
-543
+991
+419
+1191
+569
 Number of Casualties
 NIL
 NIL
@@ -409,10 +409,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count families with [casualty? = true]"
 
 BUTTON
-716
-23
-793
-56
+1009
+33
+1086
+66
 Initialize
 setup
 NIL
@@ -426,10 +426,10 @@ NIL
 1
 
 BUTTON
-822
-23
-885
-56
+1115
+33
+1178
+66
 GO
 go
 T
@@ -443,10 +443,10 @@ NIL
 1
 
 SWITCH
-42
-701
-181
-734
+16
+590
+155
+623
 social-pressure
 social-pressure
 0
@@ -454,10 +454,10 @@ social-pressure
 -1000
 
 SWITCH
-215
-701
-332
-734
+189
+590
+306
+623
 traffic-flow
 traffic-flow
 0
@@ -465,15 +465,59 @@ traffic-flow
 -1000
 
 INPUTBOX
-676
-692
-831
-752
+326
+580
+436
+640
 capacityAmount
-0.0
+2.0
 1
 0
 Number
+
+MONITOR
+951
+136
+1023
+181
+Evacuated
+count families with [safe? = true]
+17
+1
+11
+
+MONITOR
+953
+193
+1023
+238
+Casualties
+count families with [casualty? = true]
+17
+1
+11
+
+MONITOR
+1050
+136
+1124
+181
+Evacuating
+count families with [evac? = true and safe? = false and casualty? = false]
+17
+1
+11
+
+MONITOR
+1050
+192
+1123
+237
+Not Moved
+count families with [evac? = false and safe? = false and casualty? = false]
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
