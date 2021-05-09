@@ -98,8 +98,8 @@ to setup
 
   ; load tsunami files, set initial condition
   r:eval "library(ncdf4)"
-  r:eval "data<-nc_open(\"/Users/davidatwood/Documents/vanderbiltclasses/21spring/cs3274/finalproject/TsunamiEvacuation/GISData/inundation/trimmedflowdepth.nc\")"
-  r:eval "ncvar_get(data, \"flow_depth\") -> water"
+  r:eval "data<-nc_open(\"/Users/davidatwood/Documents/vanderbiltclasses/21spring/cs3274/finalproject/trimmedwaveamp.nc\")"
+  r:eval "ncvar_get(data, \"wave_amp\") -> water"
 
   r:eval (word "water2<-as.data.frame(t(water[,," 1 "]))")
   set flooding r:get "water2"
@@ -244,7 +244,20 @@ end
 to get-water
   let y pxcor let x pycor
   set water item x (item y flooding)
-  if (water > 0) [ set pcolor blue ]
+    (ifelse
+    water < -200 [
+      set pcolor 91 ]
+    water < -100 [
+      set pcolor 92 ]
+    water < 0 [
+      set pcolor 93 ]
+    water < 100 [
+      set pcolor 94 ]
+    water < 200 [
+      set pcolor 95 ]
+    water > 200 [
+      set pcolor 96 ]
+    )
 end
 
 to outdated-go
@@ -300,7 +313,7 @@ end
 GRAPHICS-WINDOW
 11
 10
-639
+615
 463
 -1
 -1
@@ -315,7 +328,7 @@ GRAPHICS-WINDOW
 1
 1
 0
-154
+148
 0
 110
 1
