@@ -70,7 +70,7 @@ to setup
 
   ; load tsunami files, set initial condition
   r:eval "library(ncdf4)"
-  r:eval "data<-nc_open(\"C:/Users/Liam/Desktop/CS 5274/TsunamiEvacuation/GISData/inundation/finalflowdeptht40-200.nc\")"
+  r:eval "data<-nc_open(\"/Users/davidatwood/Documents/vanderbiltclasses/21spring/cs3274/finalproject/TsunamiEvacuation/GISData/inundation/finalflowdeptht40-200.nc\")"
   r:eval "ncvar_get(data, \"flow_depth\") -> water"
   r:eval (word "water2<-as.data.frame(t(water[,," 1 "]))")
   set flooding r:get "water2"
@@ -242,18 +242,20 @@ to go
     ]
   ]
   ; update tsunami
-  if (ticks <= 5772) [
+  if (ticks <= 4640) [
     if (ticks mod 29 = 1) [
       let tmp ((ticks + 28) / 29)
+      print ticks
       r:eval (word "water2<-as.data.frame(t(water[,," tmp "]))")
       set flooding r:get "water2"
-      ; print r:get "water2"
+      clear-patches
       ask patches [ get-water ]
-      ; update casualties
       ask families [
         ; print [ water ] of patch-here
-        if ([ water ] of patch-here > 2 and not casualty?) [
+        if ([ water ] of patch-here > 4 and not casualty?) [
+          print "dead"
           set casualty? true
+          set color red
         ]
       ]
     ]
@@ -263,23 +265,24 @@ to go
 end
 
 to get-water
+
   let y pxcor let x pycor
   set water item x (item y flooding)
   (ifelse
-    water < -20 [
-      set pcolor 91 ]
     water < -10 [
       set pcolor 92 ]
-    water < 0 [
+    water < -5 [
       set pcolor 93 ]
-    water < 10 [
+    water < 0 [
       set pcolor 94 ]
-    water < 20 [
+    water < 2 [
       set pcolor 95 ]
-    water < 30 [
+    water < 4 [
       set pcolor 96 ]
-    water >= 30 [
-      set pcolor 97 ])
+    water < 6 [
+      set pcolor 28 ]
+    water > 6 [
+      set pcolor 27 ])
 end
 
 to outdated-go
@@ -371,10 +374,10 @@ ticks
 1.0
 
 PLOT
-939
-253
-1139
-403
+990
+252
+1190
+402
 Number Evacuated
 ticks
 NIL
@@ -389,10 +392,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count families with [safe? = true]"
 
 PLOT
-940
-420
-1140
-570
+991
+419
+1191
+569
 Number of Casualties
 NIL
 NIL
@@ -468,7 +471,7 @@ INPUTBOX
 436
 640
 capacityAmount
-2.0
+100.0
 1
 0
 Number
