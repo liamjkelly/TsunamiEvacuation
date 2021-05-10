@@ -67,11 +67,13 @@ to setup
   ; save all shelters into agentset
   set shelters nodes with [ shelter? = true ]
 
+  ; R package install
+  ; r:eval "install.packages(\"ncdf4\")"
 
   ; load tsunami files, set initial condition
   r:eval "library(ncdf4)"
 
-  r:eval "data<-nc_open(\"/Users/vijaynimma/Desktop/TsunamiEvacuation/GISData/inundation/finalflowdeptht40-200.nc\")"
+  r:eval "data<-nc_open(\"/Users/davidatwood/Documents/vanderbiltclasses/21spring/cs3274/finalproject/TsunamiEvacuation/GISData/inundation/finalflowdeptht45-200.nc\")"
   r:eval "ncvar_get(data, \"flow_depth\") -> water"
 
   r:eval (word "water2<-as.data.frame(t(water[,," 1 "]))")
@@ -244,8 +246,7 @@ to go
     ]
   ]
 
-
-  if trample-mode[
+ if trample-mode [
    ask families [
       if (evac? = true and not casualty? and not safe?)[
         let near-evac2 families in-radius 0.01 with [evac? = true and not casualty? and not safe?]
@@ -261,12 +262,11 @@ to go
         ]
 
           ]
-
-      ]
-   ]
+    ]
+  ]
 
   ; update tsunami
-  if (ticks <= 4640) [
+if (ticks <= 4495) [
     if (ticks mod 29 = 1) [
       let tmp ((ticks + 28) / 29)
       ;print ticks
@@ -275,9 +275,7 @@ to go
       clear-patches
       ask patches [ get-water ]
       ask families [
-        ; print [ water ] of patch-here
         if ([ water ] of patch-here > waterDepth and not casualty?) [
-          ;print "dead"
           set casualty? true
           ask current [
             if (capacity > 0)[
@@ -289,11 +287,10 @@ to go
     ]
   ]
   tick
-
 end
 
+; access element of matrix corresponding to patch, set color of patch based on depth
 to get-water
-
   let y pxcor let x pycor
   set water item x (item y flooding)
   (ifelse
@@ -303,14 +300,14 @@ to get-water
       set pcolor 93 ]
     water < 0 [
       set pcolor 94 ]
-    water < 2 [
+    water < waterDepth / 2 [
       set pcolor 95 ]
-    water < 4 [
+    water < waterDepth [
       set pcolor 96 ]
-    water < 6 [
-      set pcolor 28 ]
-    water > 6 [
-      set pcolor 27 ])
+    water < waterDepth * 1.5 [
+      set pcolor 26 ]
+    water > waterDepth * 1.5 [
+      set pcolor 28 ])
 end
 
 to outdated-go
