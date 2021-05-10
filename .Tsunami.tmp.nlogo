@@ -243,6 +243,21 @@ to go
       ]
     ]
   ]
+
+
+  if trample-mode[
+   ask families [
+      if ([capacity] of current > capacityAmount and not [shelter?] of current and not casualty?)[
+
+          ask current [
+            if (capacity > 0)[
+            set capacity capacity - 1 ]
+          ]
+          set color red
+      ]
+    ]
+  ]
+
   ; update tsunami
   if (ticks <= 4640) [
     if (ticks mod 29 = 1) [
@@ -477,7 +492,7 @@ INPUTBOX
 436
 640
 capacityAmount
-100.0
+20.0
 1
 0
 Number
@@ -554,10 +569,21 @@ MONITOR
 926
 250
 Mortality Rate
-(families with [casualty? = true])/(families)
+(count families with [casualty? = true])/(count families)
 17
 1
 11
+
+SWITCH
+30
+634
+176
+667
+trample-mode
+trample-mode
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
