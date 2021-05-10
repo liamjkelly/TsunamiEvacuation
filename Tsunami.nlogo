@@ -70,8 +70,10 @@ to setup
 
   ; load tsunami files, set initial condition
   r:eval "library(ncdf4)"
-  r:eval "data<-nc_open(\"/Users/vijaynimma/Desktop/TsunamiEvacuation/GISData/inundation/trimmedwaveampt40-200.nc\")"
-  r:eval "ncvar_get(data, \"wave_amp\") -> water"
+
+  r:eval "data<-nc_open(\"/Users/vijaynimma/Desktop/TsunamiEvacuation/GISData/inundation/finalflowdeptht40-200.nc\")"
+  r:eval "ncvar_get(data, \"flow_depth\") -> water"
+
   r:eval (word "water2<-as.data.frame(t(water[,," 1 "]))")
   set flooding r:get "water2"
   ask patches [ get-water ]
@@ -242,20 +244,24 @@ to go
     ]
   ]
   ; update tsunami
-  if (ticks <= 5772) [
+  if (ticks <= 4640) [
     if (ticks mod 29 = 1) [
       let tmp ((ticks + 28) / 29)
-      print ticks
+      ;print ticks
       r:eval (word "water2<-as.data.frame(t(water[,," tmp "]))")
       set flooding r:get "water2"
-      ; print r:get "water2"
+      clear-patches
       ask patches [ get-water ]
-      ; update casualties
       ask families [
         ; print [ water ] of patch-here
-        if ([ water ] of patch-here > 2 and not casualty?) [
-          print "dead"
+        if ([ water ] of patch-here > waterDepth and not casualty?) [
+          ;print "dead"
           set casualty? true
+          ask current [
+            if (capacity > 0)[
+            set capacity capacity - 1 ]
+          ]
+          set color red
         ]
       ]
     ]
@@ -265,23 +271,24 @@ to go
 end
 
 to get-water
+
   let y pxcor let x pycor
   set water item x (item y flooding)
   (ifelse
-    water < -20 [
-      set pcolor 91 ]
     water < -10 [
       set pcolor 92 ]
-    water < 0 [
+    water < -5 [
       set pcolor 93 ]
-    water < 10 [
+    water < 0 [
       set pcolor 94 ]
-    water < 20 [
+    water < 2 [
       set pcolor 95 ]
-    water < 30 [
+    water < 4 [
       set pcolor 96 ]
-    water >= 30 [
-      set pcolor 97 ])
+    water < 6 [
+      set pcolor 28 ]
+    water > 6 [
+      set pcolor 27 ])
 end
 
 to outdated-go
@@ -470,7 +477,7 @@ INPUTBOX
 436
 640
 capacityAmount
-2.0
+100.0
 1
 0
 Number
@@ -525,10 +532,32 @@ INPUTBOX
 747
 653
 socialPressureNumber
-10.0
+20.0
 1
 0
 Number
+
+INPUTBOX
+812
+524
+961
+584
+waterDepth
+4.0
+1
+0
+Number
+
+MONITOR
+829
+205
+926
+250
+Mortality Rate
+(count families with [casualty? = true])/(count families)
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
