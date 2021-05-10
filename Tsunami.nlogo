@@ -247,16 +247,23 @@ to go
 
   if trample-mode[
    ask families [
-      if ([capacity] of current > capacityAmount and not [shelter?] of current and not casualty?)[
+      if (evac? = true and not casualty? and not safe?)[
+        let near-evac2 families in-radius 0.01 with [evac? = true and not casualty? and not safe?]
+
+        if (count near-evac2 > 20)[
+
+          set casualty? true
           ask current [
-            set casualty? true
-            if (capacity > 0)[
+            if (capacity > 0 and not shelter?)[
             set capacity capacity - 1 ]
           ]
-          set color red
+           set color red
+        ]
+
+          ]
+
       ]
-    ]
-  ]
+   ]
 
   ; update tsunami
   if (ticks <= 4640) [
@@ -492,7 +499,7 @@ INPUTBOX
 436
 640
 capacityAmount
-20.0
+10.0
 1
 0
 Number
@@ -558,7 +565,7 @@ INPUTBOX
 961
 584
 waterDepth
-4.0
+3.0
 1
 0
 Number
