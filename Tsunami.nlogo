@@ -70,7 +70,7 @@ to setup
 
   ; load tsunami files, set initial condition
   r:eval "library(ncdf4)"
-  r:eval "data<-nc_open(\"C:/Users/Liam/Desktop/CS 5274/TsunamiEvacuation/GISData/inundation/trimmedwaveampt40-200.nc\")"
+  r:eval "data<-nc_open(\"/Users/vijaynimma/Desktop/TsunamiEvacuation/GISData/inundation/trimmedwaveampt40-200.nc\")"
   r:eval "ncvar_get(data, \"wave_amp\") -> water"
   r:eval (word "water2<-as.data.frame(t(water[,," 1 "]))")
   set flooding r:get "water2"
@@ -235,7 +235,7 @@ to go
     ask families [
       if (evac? = false and not casualty?) [
         let near-evac families in-radius 2 with [evac? = true and not casualty?]
-        if count near-evac >= 20 [
+        if count near-evac >= socialPressureNumber [
           set evac? true
         ]
       ]
@@ -518,6 +518,17 @@ count families with [evac? = false and safe? = false and casualty? = false]
 17
 1
 11
+
+INPUTBOX
+518
+593
+747
+653
+socialPressureNumber
+10.0
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?
