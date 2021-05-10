@@ -73,7 +73,8 @@ to setup
   ; load tsunami files, set initial condition
   r:eval "library(ncdf4)"
 
-  r:eval "data<-nc_open(\"/Users/davidatwood/Documents/vanderbiltclasses/21spring/cs3274/finalproject/TsunamiEvacuation/GISData/inundation/finalflowdeptht45-200.nc\")"
+  ; replace the path below with your absolute path to finalflowdeptht45-200.nc
+  r:eval "data<-nc_open(\"C:/Users/Liam/Desktop/CS 5274/TsunamiEvacuation/GISData/inundation/finalflowdeptht45-200.nc\")"
   r:eval "ncvar_get(data, \"flow_depth\") -> water"
 
   r:eval (word "water2<-as.data.frame(t(water[,," 1 "]))")
@@ -164,7 +165,7 @@ to go
   ; movement
   ask families [
     ; is it time for this agent to evac?
-    if (ticks >= evac-time and not casualty?) [
+    if (ticks = evac-time and not casualty? and not evac?) [
       set evac? true
       move-to current
     ]
@@ -399,10 +400,10 @@ ticks
 1.0
 
 PLOT
-990
-252
-1190
-402
+822
+253
+1022
+403
 Number Evacuated
 ticks
 NIL
@@ -417,10 +418,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count families with [safe? = true]"
 
 PLOT
-991
-419
-1191
-569
+823
+420
+1023
+570
 Number of Casualties
 NIL
 NIL
@@ -435,10 +436,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count families with [casualty? = true]"
 
 BUTTON
-1009
-33
-1086
-66
+805
+27
+882
+60
 Initialize
 setup
 NIL
@@ -452,10 +453,10 @@ NIL
 1
 
 BUTTON
-1115
-33
-1178
-66
+911
+27
+974
+60
 GO
 go
 T
@@ -480,10 +481,10 @@ social-pressure
 -1000
 
 SWITCH
-189
-590
-306
-623
+169
+589
+286
+622
 traffic-flow
 traffic-flow
 0
@@ -491,9 +492,9 @@ traffic-flow
 -1000
 
 INPUTBOX
-326
+296
 580
-436
+406
 640
 capacityAmount
 10.0
@@ -502,10 +503,10 @@ capacityAmount
 Number
 
 MONITOR
-951
-136
-1023
-181
+904
+134
+976
+179
 Evacuated
 count families with [safe? = true]
 17
@@ -513,10 +514,10 @@ count families with [safe? = true]
 11
 
 MONITOR
-953
-193
-1023
-238
+906
+191
+976
+236
 Casualties
 count families with [casualty? = true]
 17
@@ -524,10 +525,10 @@ count families with [casualty? = true]
 11
 
 MONITOR
-1050
-136
-1124
-181
+1003
+134
+1077
+179
 Evacuating
 count families with [evac? = true and safe? = false and casualty? = false]
 17
@@ -535,10 +536,10 @@ count families with [evac? = true and safe? = false and casualty? = false]
 11
 
 MONITOR
-1050
-192
-1123
-237
+1003
+190
+1076
+235
 Not Moved
 count families with [evac? = false and safe? = false and casualty? = false]
 17
@@ -546,10 +547,10 @@ count families with [evac? = false and safe? = false and casualty? = false]
 11
 
 INPUTBOX
-518
-593
-747
-653
+412
+581
+641
+641
 socialPressureNumber
 20.0
 1
@@ -557,10 +558,10 @@ socialPressureNumber
 Number
 
 INPUTBOX
-812
-524
-961
-584
+649
+582
+798
+642
 waterDepth
 3.0
 1
@@ -568,24 +569,24 @@ waterDepth
 Number
 
 MONITOR
-829
-205
-926
-250
+787
+164
+884
+209
 Mortality Rate
-(count families with [casualty? = true])/(count families)
-17
+(count families with [casualty? = true])/(count families) * 100
+3
 1
 11
 
 SWITCH
-30
-634
-176
-667
+17
+635
+163
+668
 trample-mode
 trample-mode
-0
+1
 1
 -1000
 
