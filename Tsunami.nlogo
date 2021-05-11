@@ -68,7 +68,7 @@ to setup
   set shelters nodes with [ shelter? = true ]
 
   ; R package install
-  ; r:eval "install.packages(\"ncdf4\")"
+  r:eval "install.packages(\"ncdf4\")"
 
   ; load tsunami files, set initial condition
   r:eval "library(ncdf4)"
@@ -497,7 +497,7 @@ INPUTBOX
 406
 640
 capacityAmount
-10.0
+5.0
 1
 0
 Number
@@ -563,7 +563,7 @@ INPUTBOX
 798
 642
 waterDepth
-3.0
+1.0
 1
 0
 Number
