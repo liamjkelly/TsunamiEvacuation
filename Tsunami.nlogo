@@ -310,67 +310,6 @@ to get-water
     water > waterDepth * 1.5 [
       set pcolor 28 ])
 end
-
-to outdated-go
-
-  ;let dist distance next-loc
-  ;face next-loc
-  ; move along the path to the next node
-  ;ifelse 3 < dist [
-  ;  jump 3
-  ;] [
-  ; reached next node
-  ; move-to next-loc
-  ; set current next-loc
-  ;]
-  ;ask families [
-  ; if not at the shelter, move to the next node in the path
-  ; if at the shelter, mark the agent safe
-  ;if (evac? = true) [
-  ;let path nobody ; no path yet
-  ;let t target ; save shelter into local variable
-  ; find the path to the target shelter
-  ;ask current [
-  ;  set path but-first nw:turtles-on-path-to t
-  ;]
-  ;ifelse (length path != 0) [
-  ; get first node on the path and move to it, make it the current location
-  ;  let next-loc first path
-  ;  face next-loc
-  ;  move-to next-loc
-  ;  set current next-loc
-  ;]  [
-  ;   set safe? true
-  ; set color green
-  ;   set shape "circle"
-  ; ]
-  ; ]
-  ;]
-  ;let target one-of nodes with [ shelter? = true ]
-  ;if target != nobody [
-  ; Remember the starting node
-  ;let current loc1
-  ; Define a path variable from the current node- take all but
-  ; the first item (as first item is current node)
-  ;let path nobody
-  ;ask current [
-  ; set path but-first nw:turtles-on-path-to target
-  ;]
-  ; Move along the path node-to-node
-  ;foreach path [
-  ; next-target ->
-  ; face next-target
-  ;  move-to next-target
-  ;]
-  ;set safe? true
-  ;set color green
-  ;set shape "circle"
-  ;]
-  ;let new-location one-of [link-neighbors] of loc1
-  ;face new-location  ;; not strictly necessary, but improves the visuals a bit
-  ;move-to new-location
-  ;set loc1 new-location
-end
 @#$#@#$#@
 GRAPHICS-WINDOW
 11
