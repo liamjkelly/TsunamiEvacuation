@@ -1,6 +1,6 @@
 extensions [gis time nw r]
-patches-own[road-here zone-here water bridge-here]
-globals [streets-dataset water-dataset tsunami zones1-dataset zones2-dataset zones3-dataset bridges-dataset meters shelters flooding]
+patches-own[road-here zone-here water ]
+globals [streets-dataset water-dataset tsunami zones1-dataset zones2-dataset zones3-dataset meters shelters flooding]
 breed [families family]
 breed [nodes node]
 families-own [loc1 safe? casualty? evac? target current evac-time]
@@ -10,17 +10,12 @@ to setup
   clear-all
   reset-ticks
 
-  ; Load coordinate system
-  ;gis:load-coordinate-system "GISData/shape/roads.prj"
-
   ; Load all of our datasets
   set streets-dataset gis:load-dataset "GISData/shape/roads.shp"
   set water-dataset gis:load-dataset "GISData/shape/waterways.shp"
   set zones1-dataset gis:load-dataset "GISData/Zones/Zones1.shp"
   set zones2-dataset gis:load-dataset "GISData/Zones/Zones2.shp"
   set zones3-dataset gis:load-dataset "GISData/Zones/Zones3.shp"
-  set bridges-dataset gis:load-dataset "GISData/shape/Bridges.shp"
-  ; set tsunami gis:load-dataset "GISData/inundation/WaterStart.asc"
 
   ; Set the world envelope to the union of all of our dataset's envelopes
   gis:set-world-envelope (gis:envelope-union-of (gis:envelope-of streets-dataset)
@@ -35,9 +30,6 @@ to setup
   ; draw rivers (for background)
   gis:set-drawing-color blue
   gis:draw water-dataset 1
-  ; draw bridges
-  gis:set-drawing-color black
-  gis:fill bridges-dataset 1
   ; draw evac zones
   ;gis:set-drawing-color black
   ;gis:fill zones1-dataset 1
@@ -45,7 +37,6 @@ to setup
   ;gis:fill zones2-dataset 1
   ;gis:set-drawing-color black
   ;gis:fill zones3-dataset 1
-  ; gis:paint tsunami 50
 
   ; is there a spawn zone here? is there a bridge here?
   ask patches [
@@ -56,9 +47,6 @@ to setup
     ] (gis:intersects? zones3-dataset self) [
       set zone-here 3
     ])
-    if gis:intersects? bridges-dataset self [
-      set bridge-here 1
-    ]
   ]
 
   ; make road graph from road dataset
@@ -68,6 +56,7 @@ to setup
   set shelters nodes with [ shelter? = true ]
 
   ; R package install
+  ; all tsunami netcdf code adapted from: https://simulatingcomplexity.wordpress.com/2016/09/21/working-with-netcdf-files-in-an-agent-based-model-skinning-the-model-input-data-cat-updated/
   r:eval "install.packages(\"ncdf4\")"
 
   ; load tsunami files, set initial condition
@@ -115,6 +104,7 @@ to setup
 end
 
 to make-road-network
+  ; this code modified from: https://stackoverflow.com/questions/49631129/vectorfeature-in-a-shapefile-for-a-road-network
   clear-links
   let first-node nobody
   let previous-node nobody
@@ -185,6 +175,7 @@ to go
         ; get first node on the path and move to it, make it the current location
         ifelse not traffic-flow [
           ; get first node on the path and move to it, make it the current location
+          ; this movement code modified from: https://stackoverflow.com/questions/49673620/movement-of-turtles-between-nodes-following-the-shortest-path
           let next-loc first path
           face next-loc
           move-to next-loc
